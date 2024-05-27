@@ -1,7 +1,12 @@
 # Cuantificación de volumen captable en diques o cosechadora de agua de temporal usando R
 Miguel Armando López Beltrán
+
 miguel.armandolb@uas.edu.mx
+
 Universidad Autónoma de Sinaloa
+
+22 de Mayo de 2024
+
 ## Objetivo
 Proporcionar a los estudiantes las habilidades necesarias para generar un script en el lenguaje de programación en R y aplicarlo específicamente en el análisis y cuantificación del volumen de agua que puede ser almacenado en una cosechadora de agua.
 
