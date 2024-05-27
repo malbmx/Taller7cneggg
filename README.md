@@ -1,11 +1,15 @@
-# Objetivo
+# Cuantificación de volumen captable en diques o cosechadora de agua de temporal usando R
+Miguel Armando López Beltrán
+miguel.armandolb@uas.edu.mx
+Universidad Autónoma de Sinaloa
+## Objetivo
 Proporcionar a los estudiantes las habilidades necesarias para generar un script en el lenguaje de programación en R y aplicarlo específicamente en el análisis y cuantificación del volumen de agua que puede ser almacenado en una cosechadora de agua.
 
 
-# Configuración de bibliotecas y descarga de datos
+## Configuración de bibliotecas y descarga de datos
 
 
-## Descripción de los paquetes
+### Descripción de los paquetes
 httr
 : Permite descargar archivos desde R a traves de solicitudes a servidores web.
 
@@ -82,7 +86,7 @@ if(!require(ggplot2)){
 ```
 
 
-## Importación de datos
+### Importación de datos
 El código descarga el archivo en forma temporal, su contenido es un identificador y coordenadas X, Y, Z. 
 
 En este caso práctico se descargara directamente desde github:
@@ -101,15 +105,15 @@ head(Datos)
 ```
 
 
-# Análisis exploratorio de datos 
+## Análisis exploratorio de datos 
 
-## Limpieza y preprocesamiento de los datos
+### Limpieza y preprocesamiento de los datos
 Anteriormente, el archivo fue importado a la sesión en R con la función *read_excel*.
 
-## Identificación del contenido de datos
+### Identificación del contenido de datos
 En ocasiones es necesario ver si existen datos faltantes *NA* y eliminar las lineas inecesarias. Tambien se verifica si hay filas duplicadas y las elimina si es necesario. 
 
-### Búsqueda de datos faltantes
+#### Búsqueda de datos faltantes
 ```{r}
 if(sum(is.na(Datos))>0){
     cat("\nPresenta datos faltantes o errores en el tipo de dato...\n")
@@ -118,7 +122,7 @@ if(sum(is.na(Datos))>0){
     Datos<-drop_na(Datos)
     }else{cat("Sin datos faltantes...\n")}
 ```
-### Búsqueda de datos duplicados
+#### Búsqueda de datos duplicados
 ```{r}
 verif<-table(duplicated(Datos))
   is.na(verif[2])
@@ -130,7 +134,7 @@ verif<-table(duplicated(Datos))
     }
 ```
 
-## Identificación de valores atípicos
+### Identificación de valores atípicos
 
 Aplicamos un diagrama de cajas (boxplot) para analizar y resumir la variabilidad de un conjunto de datos, lo que permite identificar valores atipicos.
 
@@ -139,7 +143,7 @@ boxplot(Datos$Z)
 ```
 
 
-## Visualización gráfica
+### Visualización gráfica
 Una manera de visualizar la información geoespacial en la ubicación de los puntos, correlacionamos las coordenadas X y Y.
 
 ```{r}
@@ -147,7 +151,7 @@ plot(Datos$Y~Datos$X)
 ```
 
 
-## Estadística descriptiva
+### Estadística descriptiva
 El análisis descriptivo es una herramienta que proporciona una compresión básica y esencial de los datos.
 ```{r}
 summary(Datos)
@@ -162,9 +166,9 @@ En este ejemplo solo nos interesa conocer la media y su desviación estándar de
 
 
 
-# Preparación de un raster para los datos
+## Preparación de un raster para los datos
 
-## Dimensiones de la imagen
+### Dimensiones de la imagen
 
 Obtenemos el valor mínimo y máximo en las coordenadas X y Y. EL objetivo es obtener los vertices de las coordendadas del raster.   
 
@@ -179,7 +183,7 @@ y.range
 ```
 
 
-### Dataframe bidimensional
+#### Dataframe bidimensional
 Con los rangos determinados en las coordenadas X y Y, se procede a crear una matriz donde se guardaran los datos interpolados. El comando **seq** crea una secuencia desde un valor inicial a un valor final, asimismo, asignamos la resolución espacial que tendrá cada pixel en metros dentro de la matriz.
 Con la función *head* visualizaremos solo los primeros 5 datos. 
 ```{r}
@@ -201,7 +205,7 @@ grd<-expand.grid(x_seq, y_seq)
 plot(grd)
 ```
 
-## Transformación a datos geoespaciales
+### Transformación a datos geoespaciales
 Se transforma los datos a datos geoespaciales con un sistema de referencia usando EPSG: 32613 (UTM-13 N). 
 
 ```{r}
@@ -235,7 +239,7 @@ plot(grd, cex=2, col="gray", main="Matriz generada para almacenar datos interpol
 points(Datos, pch=1, col="red", cex=1)
 ```
 
-## Interpolación de distancia inversa ponderada
+### Interpolación de distancia inversa ponderada
 ```{r}
 
 # Configuramos el valor de la ponderación al modelo
@@ -262,7 +266,7 @@ plot(modelo, main="Modelo digital de elevación de un dique.", col=topo.colors(1
 
 
 
-## Validación de la interpolación
+### Validación de la interpolación
 
 Para la validación se utilizo la raíz del error medio cuadrático:
 \begin{equation}
@@ -284,7 +288,7 @@ cat("Ponderación: ",paste0(W),
 
 
 
-## Creación de curvas de nivel
+### Creación de curvas de nivel
 
 Se crean curvas de nivel con la intención de generar un nivel máximo de agua. 
 
@@ -306,7 +310,7 @@ plot3D(modelo, col=topo.colors(10))
 ```
 
 
-## Cuantificación del volumen total de agua a capacidad máxima de la cosechadora de agua
+### Cuantificación del volumen total de agua a capacidad máxima de la cosechadora de agua
 Calculamos la lámina de agua en cada pixel, para ello aplicaremos la siguiente ecuación:
 
 $$La = Curva-Pixel $$
@@ -334,7 +338,7 @@ values(raster_Lamina)<-Lamina
 plot(raster_Lamina,  col=rev(topo.colors(10)), main="Lámina de agua")
 ```
 
-## Estimación del volumen
+### Estimación del volumen
 
 Para la estimación del volumen se aplica un simple ecuación tomando en cuenta el área y la altura (lamina) de agua.
 
@@ -358,7 +362,7 @@ cat("Volumen total captable: ", VolumenTotal, "m^3")
 
 
 
-## Generación cartográfica
+### Generación cartográfica
 
 ```{r}
 cartografia<-levelplot(modelo,
@@ -373,7 +377,7 @@ plot(modelo, main="Modelo digital de elevación (msnm)",
 
 ```
 
-## Exportar archivos
+### Exportar archivos
 Ya finalizado exportamos los archivos de datos geoespaciales.
 
 ```{r}
@@ -391,10 +395,10 @@ Nota: Debe de existir el directorio.
 
 
 
-# Práctica 2
+## Práctica 2
 **Modificamos el valor *W*** y seleccionaremos el mejor modelo para obtener el volumen. 
 
-# Finalización del taller
+## Finalización del taller
 
 - La cantidad de volumen va depender de la altura de agua que consideremos como la curva máxima de agua. En consecuencia aumenta o disminuye el volumen total.
 
